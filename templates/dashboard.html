@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .header-title-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #38bdf8; /* Sky 400 */
+        }
+        
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #1e293b;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid #334155;
+        }
+        
+        .profile-section img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .profile-section .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-logout:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: #1e293b;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: #60a5fa;
+            margin-top: 5px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #38bdf8;
+        }
+        
+        input[type="text"]::placeholder {
+            color: #64748b;
+        }
+
+        .table-wrapper {
+            background-color: #1e293b;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background-color: #0f172a;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr:hover {
+            background-color: #334155;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ip-badge {
+            background-color: #1d4ed8;
+            color: #bfdbfe;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        .password-redacted {
+            color: #22c55e;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        
+        .timestamp {
+            color: #cbd5e1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        .user-agent {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        
+        .user-agent:hover {
+            white-space: normal;
+            word-break: break-all;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="header-title-section">
+            <h1>Analytics Portal Dashboard</h1>
+            <div style="display:flex; gap: 15px; margin-top: 15px;">
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Total Accesses</h3>
+                        <div class="value" id="totalCount">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <!-- Render User Data populated by Jinja via session -->
+            {% if user %}
+                <img src="{{ user.picture }}" alt="Profile Picture" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random';">
+                <span class="user-name">{{ user.name }}</span>
+            {% else %}
+                <span class="user-name">Admin</span>
+            {% endif %}
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search access logs (IP, Email, Location)...">
+    </div>
+
+    <div class="table-wrapper">
+        <table id="logsTable">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>IP Address</th>
+                    <th>Location</th>
+                    <th>Authenticated Email</th>
+                    <th>Status</th>
+                    <th>User Agent</th>
+                </tr>
+            </thead>
+            <tbody id="logsBody">
+                <tr><td colspan="6" class="empty-state">Loading connection history...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let allLogs = [];
+
+    async function fetchLogs() {
+        try {
+            const response = await fetch('/api/logs');
+            if (response.redirected) {
+                // Handle case where session expired and API tried to redirect to login
+                window.location.href = response.url;
+                return;
+            }
+            allLogs = await response.json();
+            renderLogs(allLogs);
+            updateStats(allLogs);
+        } catch (error) {
+            document.getElementById('logsBody').innerHTML = `<tr><td colspan="6" class="empty-state">Error loading connection data.</td></tr>`;
+        }
+    }
+
+    function renderLogs(logsToRender) {
+        const tbody = document.getElementById('logsBody');
+        tbody.innerHTML = '';
+
+        if (logsToRender.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No connection logs found.</td></tr>`;
+            return;
+        }
+
+        logsToRender.forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="timestamp">${escapeHtml(log.timestamp)}</td>
+                <td><span class="ip-badge">${escapeHtml(log.ip)}</span></td>
+                <td>${escapeHtml(log.location)}</td>
+                <td><strong>${escapeHtml(log.username)}</strong></td>
+                <td><span class="password-redacted">${escapeHtml(log.password)}</span></td>
+                <td class="user-agent" title="${escapeHtml(log.user_agent)}">${escapeHtml(log.user_agent)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateStats(logs) {
+        document.getElementById('totalCount').textContent = logs.length;
+    }
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const filtered = allLogs.filter(log => {
+            return log.ip.toLowerCase().includes(term) ||
+                   log.username.toLowerCase().includes(term) ||
+                   log.location.toLowerCase().includes(term) ||
+                   log.user_agent.toLowerCase().includes(term);
+        });
+        renderLogs(filtered);
+    });
+
+    fetchLogs();
+    setInterval(fetchLogs, 5000);
+</script>
+
+</body>
+</html>

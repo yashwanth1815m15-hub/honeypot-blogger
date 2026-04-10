@@ -1,0 +1,6 @@
+flask
+requests
+Flask-SQLAlchemy
+gunicorn
+Authlib
+python-dotenv
